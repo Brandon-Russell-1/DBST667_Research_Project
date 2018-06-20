@@ -48,4 +48,20 @@
   publisher = {Wiley Online Library},
 }
 
+@InCollection{eberly2007multiple,
+  author    = {Eberly, Lynn E},
+  title     = {Multiple linear regression},
+  booktitle = {Topics in Biostatistics},
+  publisher = {Springer},
+  year      = {2007},
+  pages     = {165--187},
+}
+
+@Misc{therneau2018introduction,
+  author    = {Therneau, Terry M and Atkinson, Elizabeth J and others},
+  title     = {An introduction to recursive partitioning using the RPART routines},
+  year      = {2018},
+  publisher = {Technical Report. URL https://cran.r-project.org/web/packages/rpart/vignettes/longintro.pdf},
+}
+
 @Comment{jabref-meta: databaseType:bibtex;}
