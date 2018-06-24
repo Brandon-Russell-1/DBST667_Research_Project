@@ -1,3 +1,7 @@
+#Body Fat dataset Research Project Analysis
+#Brandon Russell - DBST667
+#Naive Bayes
+#Install and load necessary packages
 #install the e1071 package.  Only once.
 install.packages("e1071")
 
@@ -6,14 +10,20 @@ install.packages("e1071")
 library("arules")
 library("e1071")
 
+#Verify working directory
+getwd()
 #Load dataset
 bodyfat <- read.csv("fat.csv", header = TRUE, sep = ",")
 #View data to determine if needs any preprocessing
-#View(bodyfat)
+View(bodyfat)
 summary(bodyfat)
 str(bodyfat)
 #Verify no empty fields
 apply(bodyfat, 2, function (bodyfat) sum(is.na(bodyfat)))
+#Replace input error data with attribute mean 
+bodyfat$Height[42]<-mean(bodyfat$Height, na.rm=TRUE)
+#Remove row with multiple bad entries
+bodyfat <- bodyfat[-182, ]
 #Remove case number
 bodyfat$Case.Number <- NULL
 bodyfat$Density <- NULL
@@ -23,7 +33,7 @@ bodyfat$Adiposity.index <- NULL
 
 
 bodyfat$Percent.body.fat.using.Brozek <- discretize(bodyfat$Percent.body.fat.using.Brozek, "frequency", breaks = 6)
-head(bodyfat$Percent.body.fat.using.Siri)
+head(bodyfat$Percent.body.fat.using.Brozek)
 
 bodyfat$Age <- discretize(bodyfat$Age, "frequency", breaks = 6)
 head(bodyfat$Age)
@@ -78,7 +88,10 @@ model
 summary(model)
 str(model)
 #confusion matrix for the training set; need to round the estimated values
-table(predict(model, train.data), train.data$Percent.body.fat.using.Brozek)
+trainpred <- predict(model, train.data)
+summary(trainpred)
+traintablepred <- table(trainpred, train.data$Percent.body.fat.using.Brozek)
+traintablepred
 prop.table(table(predict(model, train.data), train.data$Percent.body.fat.using.Brozek))
 #confusion matrix for the test data
 table(predict(model, test.data), test.data$Percent.body.fat.using.Brozek)

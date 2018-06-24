@@ -1,17 +1,23 @@
 #Body Fat dataset Research Project Analysis
 #Brandon Russell - DBST667
 #Multiple Linear Regression
-#Load necessary packages
+#Install and Load necessary packages
+install.packages("caret")
+library("caret")
 #Verify working directory
 getwd()
 #Load dataset
 bodyfat <- read.csv("fat.csv", header = TRUE, sep = ",")
 #View data to determine if needs any preprocessing
-#View(bodyfat)
+View(bodyfat)
 summary(bodyfat)
 str(bodyfat)
 #Verify no empty fields
 apply(bodyfat, 2, function (bodyfat) sum(is.na(bodyfat)))
+#Replace input error data with attribute mean 
+bodyfat$Height[42]<-mean(bodyfat$Height, na.rm=TRUE)
+#Remove row with multiple bad entries
+bodyfat <- bodyfat[-182, ]
 #Remove case number
 bodyfat$Case.Number <- NULL
 bodyfat$Density <- NULL
@@ -19,37 +25,68 @@ bodyfat$Fat.Free.Weight <- NULL
 bodyfat$Percent.body.fat.using.Siri <- NULL
 bodyfat$Adiposity.index <- NULL
 
-#Build distributions for Figure 1
-library(ggplot2)
-library(tidyr)
+#Split data between training and test sets
+set.seed(1234)
+ind <- sample(2, nrow(bodyfat), replace = TRUE, prob = c(0.7, 0.3))
+train.data <- bodyfat[ind == 1, ]
+test.data <- bodyfat[ind == 2, ]
 
-bodyfat %>% gather() %>% head()
-
-ggplot(gather(bodyfat), aes(value)) + 
-  geom_histogram(bins = 10) + 
-  facet_wrap(~key, scales = 'free_x')
-
-#Build table 1 for paper
-sapply(bodyfat, sd, na.rm = TRUE)
-tmp <- do.call(data.frame, 
-               list(mean = apply(bodyfat, 2, mean),
-                    sd = apply(bodyfat, 2, sd),
-                    median = apply(bodyfat, 2, median),
-                    min = apply(bodyfat, 2, min),
-                    max = apply(bodyfat, 2, max)))
-               
-tmp
-write.csv(tmp, file = "bodyfat_specs.csv")
-
-model <- lm(Percent.body.fat.using.Brozek~., data=bodyfat)
-prediction <- predict(model, newdata=bodyfat)
-cor(prediction, bodyfat$Percent.body.fat.using.Brozek)
+model <- lm(Percent.body.fat.using.Brozek~., data=train.data)
 summary(model)
 
-modelAbdomen <- lm(Percent.body.fat.using.Brozek~Abdomen.circumference, data=bodyfat)
+#Plot the model
+par(mfrow = c(4,4))
+plot(model)
+plot(Percent.body.fat.using.Brozek~., data=train.data)
 
-plot(Percent.body.fat.using.Brozek~Abdomen.circumference, data=bodyfat)
-abline(modelAbdomen, col="red")
+#remove the less significant feature
+model2 = lm(Percent.body.fat.using.Brozek~Age+Weight+Neck.circumference
+            +Chest.circumference+Abdomen.circumference
+            +Hip.circumference+Thigh.circumference+Wrist.circumference, data=train.data)
+summary(model2)
 
-plot(Percent.body.fat.using.Brozek~., data=bodyfat)
-abline(modelAbdomen, col="red")
+#Plot the model2
+par(mfrow = c(4,4))
+plot(model2)
+plot(Percent.body.fat.using.Brozek~Age+Weight+Neck.circumference
+     +Chest.circumference+Abdomen.circumference
+     +Hip.circumference+Thigh.circumference+Wrist.circumference, data=train.data)
+
+#remove the less significant feature
+model3 = lm(Percent.body.fat.using.Brozek~Abdomen.circumference+Thigh.circumference+Wrist.circumference, data=train.data)
+summary(model3)
+
+#Plot the model3
+par(mfrow = c(4,4))
+plot(model3)
+plot(Percent.body.fat.using.Brozek~Abdomen.circumference+Thigh.circumference+Wrist.circumference, data=train.data)
+
+#K-cross validation
+set.seed(1234)
+kcrossmodel <- train(Percent.body.fat.using.Brozek~Age+Weight+Neck.circumference
+                     +Chest.circumference+Abdomen.circumference
+                     +Hip.circumference+Thigh.circumference+Wrist.circumference, train.data,
+                     method = "lm", trControl = trainControl(
+                       method = "cv", number = 10,
+                       verboseIter = TRUE
+                     )
+)
+summary(kcrossmodel)
+kcrossmodel
+
+#Predict on test data
+testpred <- predict(model2, test.data)
+testpred
+summary(testpred)
+actuals_preds <- data.frame(cbind(actuals=test.data$Percent.body.fat.using.Brozek, predicteds=testpred))  # make actuals_predicteds dataframe.
+correlation_accuracy <- cor(actuals_preds)
+correlation_accuracy
+head(actuals_preds)
+min_max_accuracy <- mean(apply(actuals_preds, 1, min) / apply(actuals_preds, 1, max))  
+min_max_accuracy
+mape <- mean(abs((actuals_preds$predicteds - actuals_preds$actuals))/actuals_preds$actuals)  
+mape
+
+
+
+
