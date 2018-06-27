@@ -20,15 +20,17 @@ apply(bodyfat, 2, function (credit) sum(is.na(bodyfat)))
 bodyfat$Case.Number <- NULL
 bodyfat$Density <- NULL
 bodyfat$Fat.Free.Weight <- NULL
-bodyfat$Percent.body.fat.using.Brozek <- NULL
+bodyfat$Percent.body.fat.using.Siri <- NULL
+bodyfat$Adiposity.index <- NULL
+bodyfat$Height <- NULL
 #View(bodyfat)
 
 #Perform discretization on int/num attributes to perform the Apriori method, and check work
-#bodyfat$Percent.body.fat.using.Brozek <- discretize(bodyfat$Percent.body.fat.using.Brozek, "cluster")
-#head(bodyfat$Percent.body.fat.using.Brozek)
+bodyfat$Percent.body.fat.using.Brozek <- discretize(bodyfat$Percent.body.fat.using.Brozek, "cluster")
+head(bodyfat$Percent.body.fat.using.Brozek)
 
-bodyfat$Percent.body.fat.using.Siri <- discretize(bodyfat$Percent.body.fat.using.Siri, "cluster", breaks = 4)
-head(bodyfat$Percent.body.fat.using.Siri)
+#bodyfat$Percent.body.fat.using.Siri <- discretize(bodyfat$Percent.body.fat.using.Siri, "cluster", breaks = 4)
+#head(bodyfat$Percent.body.fat.using.Siri)
 
 #bodyfat$Density <- discretize(bodyfat$Density, "cluster" )
 #head(bodyfat$Density)
@@ -39,11 +41,11 @@ head(bodyfat$Age)
 bodyfat$Weight <- discretize(bodyfat$Weight, "cluster", breaks = 4 )
 head(bodyfat$Weight)
 
-bodyfat$Height <- discretize(bodyfat$Height, "cluster", breaks = 4 )
-head(bodyfat$Height)
+#bodyfat$Height <- discretize(bodyfat$Height, "cluster", breaks = 4 )
+#head(bodyfat$Height)
 
-bodyfat$Adiposity.index <- discretize(bodyfat$Adiposity.index, "cluster", breaks = 4)
-head(bodyfat$Adiposity.index)
+#bodyfat$Adiposity.index <- discretize(bodyfat$Adiposity.index, "cluster", breaks = 4)
+#head(bodyfat$Adiposity.index)
 
 #bodyfat$Fat.Free.Weight <- discretize(bodyfat$Fat.Free.Weight, "cluster" )
 #head(bodyfat$Fat.Free.Weight)
@@ -88,7 +90,7 @@ rules<-apriori(bodyfat)
 rules
 inspect(rules[1:10])
 #Change default values
-rules<-apriori(bodyfat, parameter = list(minlen=2, supp=0.1, conf=0.8))
+rules<-apriori(bodyfat, parameter = list(minlen=2, supp=0.1, conf=0.9))
 inspect(rules[1:10])
 
 summary(bodyfat$Percent.body.fat.using.Siri)

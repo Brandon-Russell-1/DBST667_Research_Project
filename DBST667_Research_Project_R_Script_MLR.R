@@ -9,7 +9,6 @@ getwd()
 #Load dataset
 bodyfat <- read.csv("fat.csv", header = TRUE, sep = ",")
 #View data to determine if needs any preprocessing
-View(bodyfat)
 summary(bodyfat)
 str(bodyfat)
 #Verify no empty fields
@@ -78,14 +77,19 @@ kcrossmodel
 testpred <- predict(model2, test.data)
 testpred
 summary(testpred)
+
 actuals_preds <- data.frame(cbind(actuals=test.data$Percent.body.fat.using.Brozek, predicteds=testpred))  # make actuals_predicteds dataframe.
 correlation_accuracy <- cor(actuals_preds)
 correlation_accuracy
 head(actuals_preds)
+
 min_max_accuracy <- mean(apply(actuals_preds, 1, min) / apply(actuals_preds, 1, max))  
 min_max_accuracy
-mape <- mean(abs((actuals_preds$predicteds - actuals_preds$actuals))/actuals_preds$actuals)  
-mape
+
+mae <- function(actual,predicted) {mean(abs(actual - predicted))}
+mae(actuals_preds$actuals, actuals_preds$predicteds)
+mape <- function(actual,predicted) {mean(abs((predicted - actual))/actual)}
+mape(actuals_preds$actuals, actuals_preds$predicteds)
 
 
 

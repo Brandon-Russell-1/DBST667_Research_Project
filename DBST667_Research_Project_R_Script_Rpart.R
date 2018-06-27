@@ -56,14 +56,6 @@ confusionMatrix(pred_rpart, train.data$Percent.body.fat.using.Brozek)
 #Visualize tree
 rpart.plot(mod_rpart$finalModel, type = 4, extra = 101)
 
-#Prune
-#opt <- which.min(bodyfat_rpart$cptable[,"xerror"])
-#cp <- bodyfat_rpart$cptable[opt, "CP"]
-#bodyfat_prune <- prune(bodyfat_rpart, cp = cp)
-#printcp(bodyfat_prune)
-#summary(bodyfat_prune)
-#rpart.plot(bodyfat_prune, type = 4, extra = 101)
-
 #Predict on test data
 testpred <- predict(mod_rpart, test.data)
 
