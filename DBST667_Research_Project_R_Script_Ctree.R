@@ -51,6 +51,10 @@ myFormula<-Percent.body.fat.using.Brozek~.
 mod_rpart <- train(myFormula, train.data, method = "rpart",  tuneLength = 50, metric = "Accuracy",
                    trControl = trainControl(method = "repeatedcv", number = 10))
 mod_rpart
+
+modFitDecTree <- rpart(myFormula, train.data, method = "class", control = rpart.control(cp = mod_rpart$bestTune))
+
+modFitDecTree
 pred_rpart <- predict(mod_rpart, train.data)
 confusionMatrix(pred_rpart, train.data$Percent.body.fat.using.Brozek)
 #Visualize tree
