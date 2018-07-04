@@ -3,7 +3,11 @@
 #Multiple Linear Regression
 #Install and Load necessary packages
 install.packages("caret")
+install.packages("ROCR")
+install.packages("klaR")
 library("caret")
+library("ROCR")
+library("klaR")
 #Verify working directory
 getwd()
 #Load dataset
@@ -60,11 +64,14 @@ par(mfrow = c(4,4))
 plot(model3)
 plot(Percent.body.fat.using.Brozek~Abdomen.circumference+Thigh.circumference+Wrist.circumference, data=train.data)
 
+#Minimal adequate model test
+stepmodel <- step(model, direction="backward")
+summary(stepmodel)
+
 #K-cross validation
 set.seed(1234)
-kcrossmodel <- train(Percent.body.fat.using.Brozek~Age+Weight+Neck.circumference
-                     +Chest.circumference+Abdomen.circumference
-                     +Hip.circumference+Thigh.circumference+Wrist.circumference, train.data,
+kcrossmodel <- train(Percent.body.fat.using.Brozek ~ Height + Chest.circumference + 
+                       Abdomen.circumference + Wrist.circumference, train.data,
                      method = "lm", trControl = trainControl(
                        method = "cv", number = 10,
                        verboseIter = TRUE
@@ -74,22 +81,33 @@ summary(kcrossmodel)
 kcrossmodel
 
 #Predict on test data
-testpred <- predict(model2, test.data)
+testpred <- predict(kcrossmodel$finalModel, test.data, type = "response")
 testpred
 summary(testpred)
 
+
 actuals_preds <- data.frame(cbind(actuals=test.data$Percent.body.fat.using.Brozek, predicteds=testpred))  # make actuals_predicteds dataframe.
-correlation_accuracy <- cor(actuals_preds)
+correlation_accuracy <- cor(actuals_preds) # Return correlation accuracy
 correlation_accuracy
 head(actuals_preds)
 
 min_max_accuracy <- mean(apply(actuals_preds, 1, min) / apply(actuals_preds, 1, max))  
-min_max_accuracy
+min_max_accuracy # Return min max accuracy
 
-mae <- function(actual,predicted) {mean(abs(actual - predicted))}
-mae(actuals_preds$actuals, actuals_preds$predicteds)
-mape <- function(actual,predicted) {mean(abs((predicted - actual))/actual)}
+# Calculate error
+error <- actuals_preds$actuals - actuals_preds$predicteds
+mae <- function(error) {mean(abs(error))}#Returns Mean Absolute Error
+mape <- function(actual,predicted) {mean(abs((predicted - actual))/actual)}#returns Mean Absolute Percentage Error
+rmse <- function(error){sqrt(mean(error^2))} #returns Root Mean Squared Error
+#Run error check functions
+rmse(error)
+mae(error)
 mape(actuals_preds$actuals, actuals_preds$predicteds)
+
+#Scatter plot predictions
+par(mfrow = c(1,1))
+plot(test.data$Percent.body.fat.using.Brozek, testpred, xlab="Observed Values", ylab="Predicted Values")
+abline(a=0, b=1)
 
 
 
