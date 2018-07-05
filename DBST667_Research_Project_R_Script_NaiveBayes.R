@@ -11,6 +11,7 @@ install.packages("caret")
 library("arules")
 library("e1071")
 library("caret")
+library("klaR")
 #Verify working directory
 getwd()
 #Load dataset
@@ -34,19 +35,19 @@ bodyfat$Adiposity.index <- NULL
 #Discretize dependent variable
 bodyfat$Percent.body.fat.using.Brozek <- discretize(bodyfat$Percent.body.fat.using.Brozek, "frequency", breaks = 3)
 #Discretize independent variable
-bodyfat$Age <- discretize(bodyfat$Age, "frequency", breaks = 6)
-bodyfat$Weight <- discretize(bodyfat$Weight, "frequency", breaks = 6 )
-bodyfat$Height <- discretize(bodyfat$Height, "frequency", breaks = 6 )
-bodyfat$Neck.circumference <- discretize(bodyfat$Neck.circumference, "frequency", breaks = 6 )
-bodyfat$Chest.circumference <- discretize(bodyfat$Chest.circumference, "frequency", breaks = 6)
-bodyfat$Abdomen.circumference <- discretize(bodyfat$Abdomen.circumference, "frequency", breaks = 6)
-bodyfat$Hip.circumference <- discretize(bodyfat$Hip.circumference, "frequency", breaks = 6 )
-bodyfat$Thigh.circumference <- discretize(bodyfat$Thigh.circumference, "frequency", breaks = 6 )
-bodyfat$Knee.circumference <- discretize(bodyfat$Knee.circumference, "frequency", breaks = 6 )
-bodyfat$Ankle.circumference <- discretize(bodyfat$Ankle.circumference, "frequency", breaks = 6 )
-bodyfat$Extended.biceps.circumference <- discretize(bodyfat$Extended.biceps.circumference, "frequency", breaks = 6 )
-bodyfat$Forearm.circumference <- discretize(bodyfat$Forearm.circumference, "frequency", breaks = 6 )
-bodyfat$Wrist.circumference <- discretize(bodyfat$Wrist.circumference, "frequency", breaks = 6)
+bodyfat$Age <- discretize(bodyfat$Age, "frequency", breaks = 3)
+bodyfat$Weight <- discretize(bodyfat$Weight, "frequency", breaks = 3 )
+bodyfat$Height <- discretize(bodyfat$Height, "frequency", breaks = 3 )
+bodyfat$Neck.circumference <- discretize(bodyfat$Neck.circumference, "frequency", breaks = 3 )
+bodyfat$Chest.circumference <- discretize(bodyfat$Chest.circumference, "frequency", breaks = 3)
+bodyfat$Abdomen.circumference <- discretize(bodyfat$Abdomen.circumference, "frequency", breaks = 3)
+bodyfat$Hip.circumference <- discretize(bodyfat$Hip.circumference, "frequency", breaks = 3 )
+bodyfat$Thigh.circumference <- discretize(bodyfat$Thigh.circumference, "frequency", breaks = 3 )
+bodyfat$Knee.circumference <- discretize(bodyfat$Knee.circumference, "frequency", breaks = 3 )
+bodyfat$Ankle.circumference <- discretize(bodyfat$Ankle.circumference, "frequency", breaks = 3 )
+bodyfat$Extended.biceps.circumference <- discretize(bodyfat$Extended.biceps.circumference, "frequency", breaks = 3 )
+bodyfat$Forearm.circumference <- discretize(bodyfat$Forearm.circumference, "frequency", breaks = 3 )
+bodyfat$Wrist.circumference <- discretize(bodyfat$Wrist.circumference, "frequency", breaks = 3)
 
 #make sure that the result is reproducible
 set.seed(1234)
@@ -55,24 +56,32 @@ train.data <- bodyfat[ind == 1, ]
 test.data <- bodyfat[ind == 2, ]
 
 myFormula<-Percent.body.fat.using.Brozek~.
-
+myFormula<-Percent.body.fat.using.Brozek~Height+Chest.circumference+Abdomen.circumference+Wrist.circumference
 #build the model and store in a variable model
 model<-naiveBayes(myFormula, train.data)
 #output the model
 model
 summary(model)
 str(model)
+
+#rpart w/ cross-validation
+my_nb_rpart <- train(myFormula, train.data, method = "naive_bayes",  tuneLength = 100, metric = "Accuracy",
+                     trControl = trainControl(method = "repeatedcv", number = 10, repeats = 5))
+
+my_nb_rpart
+my_nb_rpart$finalModel
+summary(my_nb_rpart)
 #confusion matrix for the training set; need to round the estimated values
-trainpred <- predict(model, train.data)
+trainpred <- predict(my_nb_rpart, train.data)
 summary(trainpred)
 confusionMatrix(trainpred, train.data$Percent.body.fat.using.Brozek)
 
 #confusion matrix for the test data
-testpred <- predict(model, test.data)
+testpred <- predict(my_nb_rpart, test.data)
 summary(testpred)
 confusionMatrix(testpred, test.data$Percent.body.fat.using.Brozek)
 #mosaic plot
-mosaicplot(table(predict(model, test.data), test.data$Percent.body.fat.using.Brozek), shade=TRUE, main="Predicted vs. Actual")
+#mosaicplot(table(predict(model, test.data), test.data$Percent.body.fat.using.Brozek), shade=TRUE, main="Predicted vs. Actual")
 
 
 
