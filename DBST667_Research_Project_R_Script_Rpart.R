@@ -44,8 +44,9 @@ train.data <- bodyfat[ind == 1, ]
 test.data <- bodyfat[ind == 2, ]
 #Create rpart formula
 myFormula<-Percent.body.fat.using.Brozek~.
+myFormula<-Percent.body.fat.using.Brozek~Height+Chest.circumference+Abdomen.circumference+Wrist.circumference
 #rpart wo cross validation
-modFitDecTree <- rpart(myFormula, train.data, method = "class")
+modFitDecTree <- rpart(myFormula, train.data)
 modFitDecTree
 rpart.plot(modFitDecTree, type = 4, extra = 101)                                       
 #rpart w/ cross-validation
