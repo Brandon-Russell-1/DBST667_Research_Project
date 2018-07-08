@@ -2,8 +2,8 @@
 library(ggplot2)
 library(tidyr)
 
+#Build figure 1 for paper
 bodyfat %>% gather() %>% head()
-
 ggplot(gather(bodyfat), aes(value)) + 
   geom_histogram(bins = 10) + 
   facet_wrap(~key, scales = 'free_x')
@@ -19,3 +19,19 @@ tmp <- do.call(data.frame,
 
 tmp
 write.csv(tmp, file = "bodyfat_specs.csv")
+
+#Boxplot for outlier analysis, figure 2
+boxplot(bodyfat, las = 2, par(mar = c(12, 5, 4, 2)+ 0.1))
+set.seed(482)
+
+boxplot(bodyfat$Weight)
+identify(rep(1, length(bodyfat$Weight)), bodyfat$Weight, labels = seq_along(bodyfat$Weight))
+
+boxplot(bodyfat$Abdomen.circumference)
+identify(rep(1, length(bodyfat$Abdomen.circumference)), bodyfat$Abdomen.circumference, labels = seq_along(bodyfat$Abdomen.circumference))
+
+boxplot(bodyfat$Chest.circumference)
+identify(rep(1, length(bodyfat$Chest.circumference)), bodyfat$Chest.circumference, labels = seq_along(bodyfat$Chest.circumference))
+
+boxplot(bodyfat$Hip.circumference)
+identify(rep(1, length(bodyfat$Hip.circumference)), bodyfat$Hip.circumference, labels = seq_along(bodyfat$Hip.circumference))
