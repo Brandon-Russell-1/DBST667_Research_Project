@@ -1,3 +1,7 @@
+#Body Fat dataset Research Project Analysis
+#Brandon Russell - DBST667
+#Various figure and table builder coding sections
+
 #Build distributions for Figure 1
 library(ggplot2)
 library(tidyr)
